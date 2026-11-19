@@ -119,8 +119,8 @@ body.ch #card{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 #toast.on{display:block}
 #privacy{font-size:12px;color:var(--sub);margin-top:2px}
 
-/* 1119: 넓은 화면(아이패드·PC)에서 검색창을 지금의 3/4로 — 집 단추는 오른쪽 끝 그대로 */
-@media (min-width:700px){#q{flex:0 1 auto;width:calc((100% - 234px)*.75)}#homeBtn{margin-left:auto}}
+/* 1119: 집 단추는 늘 보이게, 검색창은 남은 폭에 저절로 맞춤 */
+#homeBtn{display:flex}
 </style>
 </head>
 <body>
