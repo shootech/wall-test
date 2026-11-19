@@ -1,7 +1,7 @@
 {
  "name": "All That Massage 올댓마사지",
  "short_name": "올댓마사지",
- "start_url": "./w68.html",
+ "start_url": "./atm.html",
  "scope": "./",
  "display": "fullscreen",
  "orientation": "any",
