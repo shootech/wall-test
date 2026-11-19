@@ -4746,7 +4746,7 @@ window.__wallTiltSet=function(x,y){cBX=x;cBY=y;setTg();dirty=true;};
 <script>/* 1119 시우님: 가게 화면 설명은 ? 단추 팝업으로 */
 window.__helpWire=function(A){const b=A.querySelector('#helpBtn'),p=A.querySelector('#helpPop'),l=A.querySelector('#hpList');if(!b||!p)return;
  const pc=!!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches);
- const T=pc?[['휠','확대 · 축소'],['오른쪽 끌기','기울이기'],['오른쪽 클릭','반듯하게 ↔ 기울게'],['블록 위아래 끌기','양꼬치처럼 돌리기'],['더블클릭·스페이스','흔들기'],['끝까지 축소','지도로 나가기']]
+ const T=pc?[['휠','확대 · 축소'],['오른쪽 끌기','기울이기'],['오른쪽 클릭','반듯하게 ↔ 기울게'],['블록 위아래 끌기','양꼬치처럼 돌리기'],['더블클릭·스페이스','흔들기'],['끝까지 축소','밖으로 나가기']]
             :[['폰 흔들기','블록이 튀었다 모여요'],['빈 곳 톡','흩어졌다 다시 모여요'],['블록 위아래로 쓸기','양꼬치처럼 돌아가요'],['두 손가락 끌기','기울이기'],['폰 기울이기','벽이 따라 움직여요']];
  l.innerHTML=T.map(t=>'<li><i>'+t[0]+'</i><span>'+t[1]+'</span></li>').join('');
  const open=e=>{e&&e.stopPropagation();p.hidden=false},close=e=>{e&&e.stopPropagation();p.hidden=true};
