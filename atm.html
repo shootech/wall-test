@@ -761,7 +761,7 @@ const GEO=[[37.5338,126.8594,0],[37.5798,127.0872,0],[37.5504,127.1389,0],[37.47
     q.value='';search();N.on=true;chips.textContent='';chips.classList.remove('on');document.body.classList.remove('ch');
     const set=new Set(pick.map(x=>x[1]));if(!solo)solo={ox:Math.round((sx-P/2)/P)*P,oy:Math.round((sy-HT/2)/HT)*HT,x0:0,x1:P,y0:0,y1:HT};
     vis=pick.map(x=>x[1]);hits=vis.slice();hi=0;for(const it of items)it.ta=set.has(it.i)?1:0;   // 가까운 순서대로 가운데부터
-    $('regLbl').textContent='내 주변';document.body.classList.add('flt');relayout(true);anims=true;goCenter();if(window.krPaint)krPaint();
+    /* 1120 시우님: '내 주변' 글자 없앰 — 빨간 GPS 단추가 그 일 */$('regLbl').textContent='';document.body.classList.add('flt');relayout(true);anims=true;goCenter();if(window.krPaint)krPaint();
     if(window.__map&&__map.open&&__map.S){const ks=new Set(pick.map(x=>RAW[x[1]][0]+'|'+RAW[x[1]][1])),ids=__map.S.filter(v=>ks.has(v.n+'|'+v.a)).map(v=>v.i),P0=__map.P0;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;ids.forEach(i=>{const p=P0[i];x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);});const d=Math.max(320,Math.max((y1-y0)*1.9,(x1-x0)*1.7/(innerWidth/innerHeight))/.536);__map.open(N.me[0],N.me[1],d);window.__nearSet=new Set(ids);if(ids.length)__map.flyTo((x0+x1)/2,(y0+y1)/2,d);}else if(window.__flatGo)__flatGo(3000);say('가장 가까운 곳 '+N.fmt(pick[0][0]));}   // 1120 시우님: 내 주변 = 내 자리를 가운데 둔 3D 지도 위에서 보여 줌
   btn.addEventListener('click',()=>{closeCard();
     if(!navigator.geolocation){say('이 기기는 위치를 못 읽어요');return;}
@@ -4698,7 +4698,7 @@ three/build/three.module.js:
 (function(){
   let asked=false;
   window.goMap=function(){
-    if(!window.__map||__map.on)return;window.__nearSet=null;
+    if(!window.__map||__map.on)return;window.__nearSet=null;{const r=document.getElementById('regLbl');r&&(r.textContent='');}
     if(typeof closeCard==='function')closeCard();
     const me=window.__near&&__near.me;
     __map.open(me?me[0]:null,me?me[1]:null);
@@ -4708,7 +4708,7 @@ three/build/three.module.js:
   addEventListener('m3back',()=>{if(typeof zoom!=='undefined'){zoom=Math.max(zoom,ZMIN);dirty=true;}});
 })();
 /* 1119 시우님: 아래 줄 양각 지도 단추 = 노란 평면 지도 대신 3D 대한민국 지도(전체)부터 */
-window.goMapAll=function(){if(!window.__map)return false;window.__nearSet=null;if(typeof closeCard==='function')closeCard();__map.openAll();return true;};
+window.goMapAll=function(){if(!window.__map)return false;window.__nearSet=null;{const r=document.getElementById('regLbl');r&&(r.textContent='');}if(typeof closeCard==='function')closeCard();__map.openAll();return true;};
 /* 1119 시우님: 3D 지도는 명패 벽의 기울기 판(자이로·두 손가락 기울이기)을 그대로 씀 */
 window.__wallPose=function(){try{basis();return[ex[0],ex[1],ex[2],ey[0],ey[1],ey[2],nx,ny,nz];}catch(_){return null;}};
 window.__wallTiltGet=function(){return[cBX,cBY];};
