@@ -59,6 +59,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-famil
   s=all.find(x=>x.name===n&&x.tel===t)||all.find(x=>x.name===n)||(n?null:all.find(x=>x.sample));}catch(e){}
  if(!s)s={id:'x',name:n,addr:q.get('a')||'',tel:t,region:q.get('rg')||'',gu:q.get('g')||''};
  window.SHOP=s;document.title=s.name+' · All That Massage';
- const sc=document.createElement('script');sc.src='atm_engine.js';document.body.appendChild(sc);})();
+ const sc=document.createElement('script');sc.src='atm_engine.js?v='+Math.floor(Date.now()/60000);/* 1123: 엔진을 바꾸면 1분 안에 모든 기기에 새 판 */document.body.appendChild(sc);})();
 </script>
 </body></html>
