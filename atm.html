@@ -311,7 +311,7 @@ function resize(){if(window.__fitH)__fitH();W=innerWidth;H=window.__fullH?__full
 // ── 상태 ──
 let sx=P/2,sy=HT/2,vx=0,vy=0,zoom=VSCALE,rotX=BASE_X,rotY=BASE_Y,tgX=BASE_X,tgY=BASE_Y;
 const IS_PC=!!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches);if(IS_PC){rotX=rotY=tgX=tgY=0;}   // 1119 시우님: 컴퓨터는 센서가 없으니 늘 반듯한 탑뷰
-const ZMIN=.3,ZMAX=4,ZDIVE=2.5;/* 1123 시우님: 진입 배율 4→2.5, 휠 3번 줄임, 명패 크기 무관 */let ex,ey,nx,ny,nz,quads=0;
+const ZMIN=.3,ZMAX=4,ZDIVE=VSCALE*2;/* 1123 시우님: 손가락은 홈 크기의 2배에서 진입, 휠은 칸 수(3번째)로 */let ex,ey,nx,ny,nz,quads=0;
 let WT=null,WC=null;
 function basis(){if(WC){let M=m3mul(m3ang(rotX,rotY),WC);M=m3clamp(M,60+12*gE);{const fk=window.__flatK?__flatK():1;if(fk<.999)M=m3orth(M.map((v,i)=>v*fk+(i%4===0?1-fk:0)));}ex=[M[0],M[1],M[2]];ey=[M[3],M[4],M[5]];nx=M[6];ny=M[7];nz=M[8];return;}const fk=window.__flatK?__flatK():1,a=rotX*fk*Math.PI/180,b=rotY*fk*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b);ex=[cb,sb*sa,-sb*ca];ey=[0,ca,sa];nx=sb;ny=-cb*sa;nz=cb*ca;}
 function unproj(u,v){const den=nz*D-nx*u-ny*v;let t=den>1e-6?nz*D/den:40;if(t>40)t=40;const X=u*t,Y=v*t,Z=D*(1-t);return[(X*ex[0]+Y*ex[1]+Z*ex[2])/zoom,(X*ey[0]+Y*ey[1]+Z*ey[2])/zoom];}
@@ -448,9 +448,10 @@ function up(e){
 }
 scene.addEventListener('pointerup',up);scene.addEventListener('pointercancel',up);
 scene.addEventListener('wheel',e=>{e.preventDefault();   // 1119 시우님: 컴퓨터 휠 = 확대·축소(마우스 자리 기준), 끝까지 줄이면 지도
+  {const t=performance.now();if(t-(window.__diveOutT||0)<650)return;}   // 1123 시우님: 가게에서 나온 직후 남은 휠은 버림
   if(zoom<=ZMIN+1e-6&&e.deltaY>0&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}
-  if(window.__dive){if(e.deltaY<0&&zoom>=ZDIVE-1e-6){const h=pick(e.clientX,e.clientY);if(h){__dive.go(RAW[h.it.d],e.clientX,e.clientY,-e.deltaY*(e.ctrlKey?.01:.0015));return;}}else if(e.deltaY>0)__dive.off();}
-  const f=Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015));basis();const w0=unproj(e.clientX-W/2,e.clientY-H/2);zoom=clamp(zoom*f,ZMIN,ZMAX);const w1=unproj(e.clientX-W/2,e.clientY-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];dirty=true;},{passive:false});
+  if(window.__dive){/* 1123 시우님: 홈 크기에서 휠 3번째 칸이면 진입 — 명패 크기·휠 세기와 무관하게 칸 수로 셈 (35ms 안에 몰려 온 건 한 칸) */const NW=window.__nw||(window.__nw={t:0,s:0,n:0}),t=performance.now(),sg=Math.sign(e.deltaY),nt=!(t-NW.t<35&&sg===NW.s);NW.t=t;NW.s=sg;if(e.deltaY<0){const h=pick(e.clientX,e.clientY);if(h&&(e.ctrlKey?zoom>=VSCALE*2:(nt&&NW.n>=2))){NW.n=0;__dive.go(RAW[h.it.d],e.clientX,e.clientY,1);return;}if(nt&&!e.ctrlKey)NW.n++;}else if(e.deltaY>0){if(nt)NW.n=Math.max(0,NW.n-1);__dive.off();}}
+  const f=Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015));basis();const w0=unproj(e.clientX-W/2,e.clientY-H/2);zoom=clamp(zoom*f,ZMIN,ZMAX);if(zoom<=VSCALE*1.001&&window.__nw)__nw.n=0;const w1=unproj(e.clientX-W/2,e.clientY-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];dirty=true;},{passive:false});
 scene.addEventListener('contextmenu',e=>e.preventDefault());
 // 1119 시우님: 컴퓨터 마우스 오른쪽 끌기 = 두 손가락 기울이기(벽·3D 지도 같이), 오른쪽 한 번 딸깍 = 반듯한 탑뷰로
 {let rt=null;addEventListener('contextmenu',e=>e.preventDefault(),true);
@@ -773,7 +774,7 @@ const GEO=[[37.5338,126.8594,0],[37.5798,127.0872,0],[37.5504,127.1389,0],[37.47
 })();
 q.addEventListener('input',()=>{window.__nearSet=null;if(window.__map&&__map.on)__map.close();search();});
 q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();q.blur();}});
-$('homeBtn').onclick=()=>{window.__nearSet=null;if(window.__map&&__map.on){__map.close();}if(window.__flatGo)__flatGo(3000);f3=fz=null;q.value='';search(true);try{zoom=VSCALE;sx=P/2;sy=HT/2;vx=vy=0;fly=null;dirty=true;}catch(_){}};   // 집 단추 = 전체 벽으로 + 처음 크기·자리
+$('homeBtn').onclick=()=>{window.__nearSet=null;if(window.__map&&__map.on){__map.close();}if(window.__flatGo)__flatGo(3000);f3=fz=null;q.value='';search(true);try{zoom=VSCALE;sx=P/2;sy=HT/2;vx=vy=0;fly=null;dirty=true;if(window.__nw)__nw.n=0;}catch(_){}};   // 집 단추 = 전체 벽으로 + 처음 크기·자리
 if(window.visualViewport){const vv=visualViewport,f=()=>{let b=Math.max(0,innerHeight-vv.height-vv.offsetTop);if(b<100)b=0;$('bar').style.transform=chips.style.transform='translateY('+(-b)+'px)';$('card').style.transform='translateY('+(-b)+'px)';};vv.addEventListener('resize',f);vv.addEventListener('scroll',f);}
 window.__wall={lay(){layoutList(vis);},get s(){basis();return{ex,ey,n:[nx,ny,nz],tgX,tgY,sx,sy,zoom,rotX,rotY,quads,items:items.length,pages:pages.length,P,HT,TS,vis:vis.length,fillShown:items.filter(q=>q.fill&&!q.hid).length,solo:!!solo}},set(a,b){sx=a;sy=b;dirty=true;},tilt(a,b){tgX=a;tgY=b;},items,render,
   
@@ -4741,7 +4742,7 @@ window.__wallTiltSet=function(x,y){cBX=x;cBY=y;setTg();dirty=true;};
     off(){},
     go(o,x,y,dl){return dl>0?enter(o,x,y):false;},
     pin(o,x,y,r){return r>1.08?enter(o,x,y):false;},
-    out(dl,x,y){if(performance.now()<lock)return;lock=performance.now()+700;fx(x,y);const b=document.getElementById('back');b?b.click():history.back();}
+    out(dl,x,y){if(performance.now()<lock)return;lock=performance.now()+700;fx(x,y);const b=document.getElementById('back');b?b.click():history.back();window.__diveOutT=performance.now();const R=()=>{try{zoom=VSCALE;vx=vy=0;fly=null;dirty=true;if(window.__nw)__nw.n=0;}catch(_){}};R();setTimeout(R,120);}   /* 1123 시우님: 나오면 홈 단추와 같은 크기 */
   };
 })()
 </script>
