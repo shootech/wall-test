@@ -332,7 +332,7 @@ function render(){
   const y0=cl(Math.min(c[0][1],c[1][1],c[2][1],c[3][1])-80),y1=cl(Math.max(c[0][1],c[1][1],c[2][1],c[3][1])+80);
   for(const pg of pages)pg.n=0;
   const now=performance.now(),tS=now/1000;
-  for(let n=0;n<items.length;n++){const it=items[n];if(it===grab||it===window.__armIt||it.al<0.01)continue;const pg=pages[it.pg],al=Math.round(it.al*255);
+  for(let n=0;n<items.length;n++){const it=items[n];if(it===grab||it.al<0.01)continue;const pg=pages[it.pg],al=Math.round(it.al*255);
     const L=shineL(it,tS);let sc=1;if(it.drop>=0){const t=(now-it.drop)/450;if(t>=1)it.drop=-1;else{const e=bezDrop(t);sc=t<.45?1.08+(0.93-1.08)*(e/ bezDrop(.45)):0.93+(1-0.93)*((e-bezDrop(.45))/(1-bezDrop(.45)));}}
     if(solo&&it.ta>0){const X=it.x+it.ox+solo.ox-sx,Y=it.y+it.oy+solo.oy-sy;if(X<x1+60&&X+it.w>x0-60&&Y<y1+60&&Y+it.h>y0-60)put(pg,it,X,Y,sc,0,0,al,L);continue;}
     const bx=mod(it.x+it.ox-sx-x0+it.w+60,P)+x0-it.w-60,by=mod(it.y+it.oy-sy-y0+it.h+60,HT)+y0-it.h-60;
@@ -347,8 +347,6 @@ function render(){
       gl.vertexAttribPointer(0,2,gl.FLOAT,false,VSZ,off);gl.vertexAttribPointer(1,2,gl.FLOAT,false,VSZ,off+8);gl.vertexAttribPointer(2,4,gl.FLOAT,false,VSZ,off+16);gl.vertexAttribPointer(3,4,gl.FLOAT,false,VSZ,off+32);gl.vertexAttribPointer(4,4,gl.UNSIGNED_BYTE,true,VSZ,off+48);gl.vertexAttribPointer(5,1,gl.FLOAT,false,VSZ,off+52);
       gl.drawElements(gl.TRIANGLES,cnt*6,gl.UNSIGNED_SHORT,0);}};
   for(const pg of pages)draw(pg);
-  {const A=window.__armIt;if(A&&A!==grab&&A.al>=.01){const pg=pages[A.pg];pg.n=0;const L=shineL(A,tS),sc=1.08+.025*Math.sin(tS*4.2),r=-2*Math.PI/180;   /* 1123 시우님: 들어갈 명패 = 볼트에서 잡아 든 모양(살짝 들리고 기울어짐)으로 숨 쉬듯 */
-    if(solo&&A.ta>0)put(pg,A,A.x+A.ox+solo.ox-sx,A.y+A.oy+solo.oy-sy,sc,r,1,255,L);else{const bx=mod(A.x+A.ox-sx-x0+A.w+80,P)+x0-A.w-80,by=mod(A.y+A.oy-sy-y0+A.h+80,HT)+y0-A.h-80;for(let Y=by;Y<y1+80;Y+=HT)for(let X=bx;X<x1+80;X+=P)put(pg,A,X,Y,sc,r,1,255,L);}draw(pg);}}
   if(grab){const pg=pages[grab.pg];pg.n=0;if(solo){put(pg,grab,gX+solo.ox-sx,gY+solo.oy-sy,1.08,-2*Math.PI/180,1,255,shineL(grab,tS));draw(pg);return;}const bx=mod(gX-sx-x0+grab.w+80,P)+x0-grab.w-80,by=mod(gY-sy-y0+grab.h+80,HT)+y0-grab.h-80;
     for(let Y=by;Y<y1+80;Y+=HT)for(let X=bx;X<x1+80;X+=P)put(pg,grab,X,Y,1.08,-2*Math.PI/180,1,255,shineL(grab,tS));draw(pg);}   // .tile.dragging .plate: scale(1.08) rotate(-2deg)
 }
@@ -433,7 +431,7 @@ scene.addEventListener('pointermove',e=>{
     const d=Math.hypot(b.x-a.x,b.y-a.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
     if(!pinch.mode){const dd=Math.abs(d-pinch.d),dm=Math.hypot(mx-pinch.mx,my-pinch.my);if(dd>14||dm>14){pinch.mode=dd>=dm*.8?'zoom':'tilt';pinch.d=d;pinch.mx=mx;pinch.my=my;}}
     if(pinch.mode==='zoom'){   // 벌리면 확대, 오므리면 축소 — 두 손가락 사이 지점이 제자리에 있게
-      basis();const w0=unproj(mx-W/2,my-H/2);if(pinch.z*d/pinch.d<ZMIN*.72&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}let zc=pinch.z*d/pinch.d;if(pinch.a0===undefined)pinch.a0=window.__armIt||null;/* 1123 시우님(아이패드): 한 번 벌리기로는 못 들어감 — 문턱에서 멈추고 손가락 밑 명패에 보라빛, 손 떼고 그 명패에서 한 번 더 벌리면 진입 */if(window.__dive&&zc>ZDIVE){const h=pick(mx,my);if(h&&pinch.a0&&pinch.a0===h.it&&zc>ZDIVE*1.08){if(__dive.pin(RAW[h.it.d],mx,my,9)){window.__armSet&&__armSet(null);pinch=null;pts.clear();return;}}if(h&&window.__armSet)__armSet(h.it);zc=ZDIVE;}zoom=clamp(zc,ZMIN,ZMAX);const w1=unproj(mx-W/2,my-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];}
+      basis();const w0=unproj(mx-W/2,my-H/2);if(pinch.z*d/pinch.d<ZMIN*.72&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}if(window.__dive){const zr=pinch.z*d/pinch.d;if(zr>ZDIVE){const h=pick(mx,my);if(h&&__dive.pin(RAW[h.it.d],mx,my,zr/ZDIVE)){pinch=null;pts.clear();return;}}else __dive.off();}zoom=clamp(pinch.z*d/pinch.d,ZMIN,ZMAX);const w1=unproj(mx-W/2,my-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];}
     else if(pinch.mode==='tilt'){   // 두 손가락을 같이 끌면 사방으로 기울어짐
       cBY=clamp(pinch.ry+(mx-pinch.mx)*.35,-62,62);cBX=clamp(pinch.rx-(my-pinch.my)*.35,-55,55);setTg();}
     dirty=true;
@@ -776,7 +774,7 @@ const GEO=[[37.5338,126.8594,0],[37.5798,127.0872,0],[37.5504,127.1389,0],[37.47
 })();
 q.addEventListener('input',()=>{window.__nearSet=null;if(window.__map&&__map.on)__map.close();search();});
 q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();q.blur();}});
-$('homeBtn').onclick=()=>{window.__nearSet=null;if(window.__map&&__map.on){__map.close();}if(window.__flatGo)__flatGo(3000);f3=fz=null;q.value='';search(true);try{zoom=VSCALE;sx=P/2;sy=HT/2;vx=vy=0;fly=null;dirty=true;if(window.__nw)__nw.n=0;window.__armSet&&__armSet(null);}catch(_){}};   // 집 단추 = 전체 벽으로 + 처음 크기·자리
+$('homeBtn').onclick=()=>{window.__nearSet=null;if(window.__map&&__map.on){__map.close();}if(window.__flatGo)__flatGo(3000);f3=fz=null;q.value='';search(true);try{zoom=VSCALE;sx=P/2;sy=HT/2;vx=vy=0;fly=null;dirty=true;if(window.__nw)__nw.n=0;}catch(_){}};   // 집 단추 = 전체 벽으로 + 처음 크기·자리
 if(window.visualViewport){const vv=visualViewport,f=()=>{let b=Math.max(0,innerHeight-vv.height-vv.offsetTop);if(b<100)b=0;$('bar').style.transform=chips.style.transform='translateY('+(-b)+'px)';$('card').style.transform='translateY('+(-b)+'px)';};vv.addEventListener('resize',f);vv.addEventListener('scroll',f);}
 window.__wall={lay(){layoutList(vis);},get s(){basis();return{ex,ey,n:[nx,ny,nz],tgX,tgY,sx,sy,zoom,rotX,rotY,quads,items:items.length,pages:pages.length,P,HT,TS,vis:vis.length,fillShown:items.filter(q=>q.fill&&!q.hid).length,solo:!!solo}},set(a,b){sx=a;sy=b;dirty=true;},tilt(a,b){tgX=a;tgY=b;},items,render,
   
@@ -4733,19 +4731,7 @@ window.__wallTiltSet=function(x,y){cBX=x;cBY=y;setTg();dirty=true;};
 #dive.go{animation:diveGo .26s ease-out forwards}
 @keyframes diveGo{0%{opacity:.95;transform:scale(.2)}100%{opacity:0;transform:scale(70)}}
 </style>
-<script>/* 1123 시우님: 아이패드 홈 화면 앱이 옛 판을 붙잡고 있지 않게 — 열 때·돌아올 때 새 판이 있으면 바로 새로 불러옴 */
-(function(){const B='w96';let busy=0;
-  async function chk(){if(busy)return;busy=1;try{const t=await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text());const m=t.match(/const B='(w\d+[a-z]?)'/);if(m&&m[1]!==B)location.replace(location.pathname+'?v='+m[1]);}catch(_){}busy=0;}
-  chk();document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk();});addEventListener('pageshow',e=>{if(e.persisted)chk();});
-})();</script>
 <div id="dive"></div>
-<script>/* 1123 시우님: 아이패드 문턱 — 들어갈 명패를 벽 그림 안에서 들어 올려 표시 */
-(function(){let raf=0;
-  function tick(){raf=0;if(!window.__armIt)return;if(zoom<ZDIVE*.9||document.querySelector('#stage iframe')){window.__armSet(null);return;}dirty=true;raf=requestAnimationFrame(tick);}
-  window.__armSet=function(it){if(window.__armIt===it)return;window.__armIt=it||null;try{dirty=true;}catch(_){}if(it&&!raf)raf=requestAnimationFrame(tick);};
-})();
-</script>
-
 <script>/* 1119 시우님: 확대 끝에 닿으면 → 바로 그 안마원 템플릿으로 (휠·터치패드·손가락), 작은 보라빛 번짐만. 템플릿에서 끝까지 줄이면 → 바로 나오기 */
 (function(){
   const el=document.getElementById('dive');let lock=0;
@@ -4756,7 +4742,7 @@ window.__wallTiltSet=function(x,y){cBX=x;cBY=y;setTg();dirty=true;};
     off(){},
     go(o,x,y,dl){return dl>0?enter(o,x,y):false;},
     pin(o,x,y,r){return r>1.08?enter(o,x,y):false;},
-    out(dl,x,y){if(performance.now()<lock)return;lock=performance.now()+700;fx(x,y);const b=document.getElementById('back');b?b.click():history.back();window.__diveOutT=performance.now();const R=()=>{try{zoom=VSCALE;vx=vy=0;fly=null;dirty=true;if(window.__nw)__nw.n=0;window.__armSet&&__armSet(null);}catch(_){}};R();setTimeout(R,120);}   /* 1123 시우님: 나오면 홈 단추와 같은 크기 */
+    out(dl,x,y){if(performance.now()<lock)return;lock=performance.now()+700;fx(x,y);const b=document.getElementById('back');b?b.click():history.back();window.__diveOutT=performance.now();const R=()=>{try{zoom=VSCALE;vx=vy=0;fly=null;dirty=true;if(window.__nw)__nw.n=0;}catch(_){}};R();setTimeout(R,120);}   /* 1123 시우님: 나오면 홈 단추와 같은 크기 */
   };
 })()
 </script>
