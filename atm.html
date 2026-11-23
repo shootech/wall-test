@@ -431,7 +431,7 @@ scene.addEventListener('pointermove',e=>{
     const d=Math.hypot(b.x-a.x,b.y-a.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
     if(!pinch.mode){const dd=Math.abs(d-pinch.d),dm=Math.hypot(mx-pinch.mx,my-pinch.my);if(dd>14||dm>14){pinch.mode=dd>=dm*.8?'zoom':'tilt';pinch.d=d;pinch.mx=mx;pinch.my=my;}}
     if(pinch.mode==='zoom'){   // 벌리면 확대, 오므리면 축소 — 두 손가락 사이 지점이 제자리에 있게
-      basis();const w0=unproj(mx-W/2,my-H/2);if(pinch.z*d/pinch.d<ZMIN*.72&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}if(window.__dive){const zr=pinch.z*d/pinch.d;if(zr>ZMAX){const h=pick(mx,my);if(h&&__dive.pin(RAW[h.it.d],mx,my,zr/ZMAX)){pinch=null;pts.clear();return;}}else __dive.off();}zoom=clamp(pinch.z*d/pinch.d,ZMIN,ZMAX);const w1=unproj(mx-W/2,my-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];}
+      basis();const w0=unproj(mx-W/2,my-H/2);if(pinch.z*d/pinch.d<ZMIN*.72&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}if(window.__dive){const zr=pinch.z*d/pinch.d;if(zr>ZMAX||zr>pinch.z*1.05){const h=pick(mx,my);if(h&&(zr>ZMAX||h.it.h*zr>=H*.12)&&__dive.pin(RAW[h.it.d],mx,my,zr>ZMAX?zr/ZMAX:9)){pinch=null;pts.clear();return;}}else __dive.off();}zoom=clamp(pinch.z*d/pinch.d,ZMIN,ZMAX);const w1=unproj(mx-W/2,my-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];}
     else if(pinch.mode==='tilt'){   // 두 손가락을 같이 끌면 사방으로 기울어짐
       cBY=clamp(pinch.ry+(mx-pinch.mx)*.35,-62,62);cBX=clamp(pinch.rx-(my-pinch.my)*.35,-55,55);setTg();}
     dirty=true;
@@ -449,7 +449,7 @@ function up(e){
 scene.addEventListener('pointerup',up);scene.addEventListener('pointercancel',up);
 scene.addEventListener('wheel',e=>{e.preventDefault();   // 1119 시우님: 컴퓨터 휠 = 확대·축소(마우스 자리 기준), 끝까지 줄이면 지도
   if(zoom<=ZMIN+1e-6&&e.deltaY>0&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}
-  if(window.__dive){if(e.deltaY<0&&zoom>=ZMAX-1e-6){const h=pick(e.clientX,e.clientY);if(h){__dive.go(RAW[h.it.d],e.clientX,e.clientY,-e.deltaY*(e.ctrlKey?.01:.0015));return;}}else if(e.deltaY>0)__dive.off();}
+  if(window.__dive){if(e.deltaY<0){const h=pick(e.clientX,e.clientY);/* 1123 시우님: 명패가 화면 높이의 1/5쯤 커지면 휠 한두 번에 바로 가게로 (끝까지 안 당겨도) */if(h&&(zoom>=ZMAX-1e-6||h.it.h*zoom*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015))>=H*.12)){__dive.go(RAW[h.it.d],e.clientX,e.clientY,-e.deltaY*(e.ctrlKey?.01:.0015));return;}}else if(e.deltaY>0)__dive.off();}
   const f=Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015));basis();const w0=unproj(e.clientX-W/2,e.clientY-H/2);zoom=clamp(zoom*f,ZMIN,ZMAX);const w1=unproj(e.clientX-W/2,e.clientY-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];dirty=true;},{passive:false});
 scene.addEventListener('contextmenu',e=>e.preventDefault());
 // 1119 시우님: 컴퓨터 마우스 오른쪽 끌기 = 두 손가락 기울이기(벽·3D 지도 같이), 오른쪽 한 번 딸깍 = 반듯한 탑뷰로
