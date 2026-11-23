@@ -332,7 +332,7 @@ function render(){
   const y0=cl(Math.min(c[0][1],c[1][1],c[2][1],c[3][1])-80),y1=cl(Math.max(c[0][1],c[1][1],c[2][1],c[3][1])+80);
   for(const pg of pages)pg.n=0;
   const now=performance.now(),tS=now/1000;
-  for(let n=0;n<items.length;n++){const it=items[n];if(it===grab||it.al<0.01)continue;const pg=pages[it.pg],al=Math.round(it.al*255);
+  for(let n=0;n<items.length;n++){const it=items[n];if(it===grab||it===window.__armIt||it.al<0.01)continue;const pg=pages[it.pg],al=Math.round(it.al*255);
     const L=shineL(it,tS);let sc=1;if(it.drop>=0){const t=(now-it.drop)/450;if(t>=1)it.drop=-1;else{const e=bezDrop(t);sc=t<.45?1.08+(0.93-1.08)*(e/ bezDrop(.45)):0.93+(1-0.93)*((e-bezDrop(.45))/(1-bezDrop(.45)));}}
     if(solo&&it.ta>0){const X=it.x+it.ox+solo.ox-sx,Y=it.y+it.oy+solo.oy-sy;if(X<x1+60&&X+it.w>x0-60&&Y<y1+60&&Y+it.h>y0-60)put(pg,it,X,Y,sc,0,0,al,L);continue;}
     const bx=mod(it.x+it.ox-sx-x0+it.w+60,P)+x0-it.w-60,by=mod(it.y+it.oy-sy-y0+it.h+60,HT)+y0-it.h-60;
@@ -347,6 +347,8 @@ function render(){
       gl.vertexAttribPointer(0,2,gl.FLOAT,false,VSZ,off);gl.vertexAttribPointer(1,2,gl.FLOAT,false,VSZ,off+8);gl.vertexAttribPointer(2,4,gl.FLOAT,false,VSZ,off+16);gl.vertexAttribPointer(3,4,gl.FLOAT,false,VSZ,off+32);gl.vertexAttribPointer(4,4,gl.UNSIGNED_BYTE,true,VSZ,off+48);gl.vertexAttribPointer(5,1,gl.FLOAT,false,VSZ,off+52);
       gl.drawElements(gl.TRIANGLES,cnt*6,gl.UNSIGNED_SHORT,0);}};
   for(const pg of pages)draw(pg);
+  {const A=window.__armIt;if(A&&A!==grab&&A.al>=.01){const pg=pages[A.pg];pg.n=0;const L=shineL(A,tS),sc=1.08+.025*Math.sin(tS*4.2),r=-2*Math.PI/180;   /* 1123 시우님: 들어갈 명패 = 볼트에서 잡아 든 모양(살짝 들리고 기울어짐)으로 숨 쉬듯 */
+    if(solo&&A.ta>0)put(pg,A,A.x+A.ox+solo.ox-sx,A.y+A.oy+solo.oy-sy,sc,r,1,255,L);else{const bx=mod(A.x+A.ox-sx-x0+A.w+80,P)+x0-A.w-80,by=mod(A.y+A.oy-sy-y0+A.h+80,HT)+y0-A.h-80;for(let Y=by;Y<y1+80;Y+=HT)for(let X=bx;X<x1+80;X+=P)put(pg,A,X,Y,sc,r,1,255,L);}draw(pg);}}
   if(grab){const pg=pages[grab.pg];pg.n=0;if(solo){put(pg,grab,gX+solo.ox-sx,gY+solo.oy-sy,1.08,-2*Math.PI/180,1,255,shineL(grab,tS));draw(pg);return;}const bx=mod(gX-sx-x0+grab.w+80,P)+x0-grab.w-80,by=mod(gY-sy-y0+grab.h+80,HT)+y0-grab.h-80;
     for(let Y=by;Y<y1+80;Y+=HT)for(let X=bx;X<x1+80;X+=P)put(pg,grab,X,Y,1.08,-2*Math.PI/180,1,255,shineL(grab,tS));draw(pg);}   // .tile.dragging .plate: scale(1.08) rotate(-2deg)
 }
@@ -4732,28 +4734,15 @@ window.__wallTiltSet=function(x,y){cBX=x;cBY=y;setTg();dirty=true;};
 @keyframes diveGo{0%{opacity:.95;transform:scale(.2)}100%{opacity:0;transform:scale(70)}}
 </style>
 <script>/* 1123 시우님: 아이패드 홈 화면 앱이 옛 판을 붙잡고 있지 않게 — 열 때·돌아올 때 새 판이 있으면 바로 새로 불러옴 */
-(function(){const B='w95';let busy=0;
+(function(){const B='w96';let busy=0;
   async function chk(){if(busy)return;busy=1;try{const t=await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text());const m=t.match(/const B='(w\d+[a-z]?)'/);if(m&&m[1]!==B)location.replace(location.pathname+'?v='+m[1]);}catch(_){}busy=0;}
   chk();document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk();});addEventListener('pageshow',e=>{if(e.persisted)chk();});
 })();</script>
 <div id="dive"></div>
-<style>
-#armGlow{position:fixed;z-index:15;pointer-events:none;display:none;border-radius:12px;border:2px solid rgba(150,95,235,.85);background:rgba(170,130,245,.10);box-shadow:0 0 18px 6px rgba(140,85,230,.45),inset 0 0 12px rgba(160,110,240,.35);animation:armP 1.4s ease-in-out infinite}
-@keyframes armP{0%,100%{box-shadow:0 0 14px 4px rgba(140,85,230,.38),inset 0 0 10px rgba(160,110,240,.28)}50%{box-shadow:0 0 24px 9px rgba(140,85,230,.55),inset 0 0 14px rgba(160,110,240,.42)}}
-</style>
-<div id="armGlow"></div>
-<script>/* 1123 시우님: 아이패드 문턱 — 들어갈 명패에 보라빛 (확인 버튼 없이 눈으로 확인) */
-(function(){
-  const el=document.getElementById('armGlow');let raf=0;
-  function prj(a,b){const A=a*zoom,B=b*zoom,X=A*ex[0]+B*ey[0],Y=A*ex[1]+B*ey[1],Z=A*ex[2]+B*ey[2],t=Math.max(.05,1-Z/D);return[W/2+X/t,H/2+Y/t];}
-  function tick(){raf=0;const it=window.__armIt;if(!it)return;
-    if(zoom<ZDIVE*.9||document.querySelector('#stage iframe')){window.__armSet(null);return;}
-    try{basis();const cx=solo?solo.ox+it.x+it.w/2-sx:wrapd(it.x+it.w/2-sx,P),cy=solo?solo.oy+it.y+it.h/2-sy:wrapd(it.y+it.h/2-sy,HT),hw=it.w/2+3,hh=it.h/2+3;
-      const q=[prj(cx-hw,cy-hh),prj(cx+hw,cy-hh),prj(cx-hw,cy+hh),prj(cx+hw,cy+hh)];
-      const x0=Math.min(...q.map(v=>v[0])),x1=Math.max(...q.map(v=>v[0])),y0=Math.min(...q.map(v=>v[1])),y1=Math.max(...q.map(v=>v[1]));
-      el.style.left=x0+'px';el.style.top=y0+'px';el.style.width=(x1-x0)+'px';el.style.height=(y1-y0)+'px';el.style.borderRadius=Math.min(16,(y1-y0)*.18)+'px';el.style.display='block';}catch(_){}
-    raf=requestAnimationFrame(tick);}
-  window.__armSet=function(it){if(window.__armIt===it)return;window.__armIt=it||null;if(!it){el.style.display='none';if(raf){cancelAnimationFrame(raf);raf=0;}return;}if(!raf)raf=requestAnimationFrame(tick);};
+<script>/* 1123 시우님: 아이패드 문턱 — 들어갈 명패를 벽 그림 안에서 들어 올려 표시 */
+(function(){let raf=0;
+  function tick(){raf=0;if(!window.__armIt)return;if(zoom<ZDIVE*.9||document.querySelector('#stage iframe')){window.__armSet(null);return;}dirty=true;raf=requestAnimationFrame(tick);}
+  window.__armSet=function(it){if(window.__armIt===it)return;window.__armIt=it||null;try{dirty=true;}catch(_){}if(it&&!raf)raf=requestAnimationFrame(tick);};
 })();
 </script>
 
