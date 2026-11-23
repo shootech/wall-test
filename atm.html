@@ -4731,6 +4731,11 @@ window.__wallTiltSet=function(x,y){cBX=x;cBY=y;setTg();dirty=true;};
 #dive.go{animation:diveGo .26s ease-out forwards}
 @keyframes diveGo{0%{opacity:.95;transform:scale(.2)}100%{opacity:0;transform:scale(70)}}
 </style>
+<script>/* 1123 시우님: 아이패드 홈 화면 앱이 옛 판을 붙잡고 있지 않게 — 열 때·돌아올 때 새 판이 있으면 바로 새로 불러옴 */
+(function(){const B='w95';let busy=0;
+  async function chk(){if(busy)return;busy=1;try{const t=await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'}).then(r=>r.text());const m=t.match(/const B='(w\d+[a-z]?)'/);if(m&&m[1]!==B)location.replace(location.pathname+'?v='+m[1]);}catch(_){}busy=0;}
+  chk();document.addEventListener('visibilitychange',()=>{if(!document.hidden)chk();});addEventListener('pageshow',e=>{if(e.persisted)chk();});
+})();</script>
 <div id="dive"></div>
 <style>
 #armGlow{position:fixed;z-index:15;pointer-events:none;display:none;border-radius:12px;border:2px solid rgba(150,95,235,.85);background:rgba(170,130,245,.10);box-shadow:0 0 18px 6px rgba(140,85,230,.45),inset 0 0 12px rgba(160,110,240,.35);animation:armP 1.4s ease-in-out infinite}
