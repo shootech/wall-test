@@ -311,7 +311,7 @@ function resize(){if(window.__fitH)__fitH();W=innerWidth;H=window.__fullH?__full
 // ── 상태 ──
 let sx=P/2,sy=HT/2,vx=0,vy=0,zoom=VSCALE,rotX=BASE_X,rotY=BASE_Y,tgX=BASE_X,tgY=BASE_Y;
 const IS_PC=!!(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches);if(IS_PC){rotX=rotY=tgX=tgY=0;}   // 1119 시우님: 컴퓨터는 센서가 없으니 늘 반듯한 탑뷰
-const ZMIN=.3,ZMAX=4;let ex,ey,nx,ny,nz,quads=0;
+const ZMIN=.3,ZMAX=4,ZDIVE=2.5;/* 1123 시우님: 진입 배율 4→2.5, 휠 3번 줄임, 명패 크기 무관 */let ex,ey,nx,ny,nz,quads=0;
 let WT=null,WC=null;
 function basis(){if(WC){let M=m3mul(m3ang(rotX,rotY),WC);M=m3clamp(M,60+12*gE);{const fk=window.__flatK?__flatK():1;if(fk<.999)M=m3orth(M.map((v,i)=>v*fk+(i%4===0?1-fk:0)));}ex=[M[0],M[1],M[2]];ey=[M[3],M[4],M[5]];nx=M[6];ny=M[7];nz=M[8];return;}const fk=window.__flatK?__flatK():1,a=rotX*fk*Math.PI/180,b=rotY*fk*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b);ex=[cb,sb*sa,-sb*ca];ey=[0,ca,sa];nx=sb;ny=-cb*sa;nz=cb*ca;}
 function unproj(u,v){const den=nz*D-nx*u-ny*v;let t=den>1e-6?nz*D/den:40;if(t>40)t=40;const X=u*t,Y=v*t,Z=D*(1-t);return[(X*ex[0]+Y*ex[1]+Z*ex[2])/zoom,(X*ey[0]+Y*ey[1]+Z*ey[2])/zoom];}
@@ -431,7 +431,7 @@ scene.addEventListener('pointermove',e=>{
     const d=Math.hypot(b.x-a.x,b.y-a.y),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
     if(!pinch.mode){const dd=Math.abs(d-pinch.d),dm=Math.hypot(mx-pinch.mx,my-pinch.my);if(dd>14||dm>14){pinch.mode=dd>=dm*.8?'zoom':'tilt';pinch.d=d;pinch.mx=mx;pinch.my=my;}}
     if(pinch.mode==='zoom'){   // 벌리면 확대, 오므리면 축소 — 두 손가락 사이 지점이 제자리에 있게
-      basis();const w0=unproj(mx-W/2,my-H/2);if(pinch.z*d/pinch.d<ZMIN*.72&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}if(window.__dive){const zr=pinch.z*d/pinch.d;if(zr>ZMAX||zr>pinch.z*1.05){const h=pick(mx,my);if(h&&(zr>ZMAX||h.it.h*zr>=H*.12)&&__dive.pin(RAW[h.it.d],mx,my,zr>ZMAX?zr/ZMAX:9)){pinch=null;pts.clear();return;}}else __dive.off();}zoom=clamp(pinch.z*d/pinch.d,ZMIN,ZMAX);const w1=unproj(mx-W/2,my-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];}
+      basis();const w0=unproj(mx-W/2,my-H/2);if(pinch.z*d/pinch.d<ZMIN*.72&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}if(window.__dive){const zr=pinch.z*d/pinch.d;if(zr>ZDIVE){const h=pick(mx,my);if(h&&__dive.pin(RAW[h.it.d],mx,my,zr/ZDIVE)){pinch=null;pts.clear();return;}}else __dive.off();}zoom=clamp(pinch.z*d/pinch.d,ZMIN,ZMAX);const w1=unproj(mx-W/2,my-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];}
     else if(pinch.mode==='tilt'){   // 두 손가락을 같이 끌면 사방으로 기울어짐
       cBY=clamp(pinch.ry+(mx-pinch.mx)*.35,-62,62);cBX=clamp(pinch.rx-(my-pinch.my)*.35,-55,55);setTg();}
     dirty=true;
@@ -449,7 +449,7 @@ function up(e){
 scene.addEventListener('pointerup',up);scene.addEventListener('pointercancel',up);
 scene.addEventListener('wheel',e=>{e.preventDefault();   // 1119 시우님: 컴퓨터 휠 = 확대·축소(마우스 자리 기준), 끝까지 줄이면 지도
   if(zoom<=ZMIN+1e-6&&e.deltaY>0&&window.goMap&&!(window.__map&&__map.on)){goMap();return;}
-  if(window.__dive){if(e.deltaY<0){const h=pick(e.clientX,e.clientY);/* 1123 시우님: 명패가 화면 높이의 1/5쯤 커지면 휠 한두 번에 바로 가게로 (끝까지 안 당겨도) */if(h&&(zoom>=ZMAX-1e-6||h.it.h*zoom*Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015))>=H*.12)){__dive.go(RAW[h.it.d],e.clientX,e.clientY,-e.deltaY*(e.ctrlKey?.01:.0015));return;}}else if(e.deltaY>0)__dive.off();}
+  if(window.__dive){if(e.deltaY<0&&zoom>=ZDIVE-1e-6){const h=pick(e.clientX,e.clientY);if(h){__dive.go(RAW[h.it.d],e.clientX,e.clientY,-e.deltaY*(e.ctrlKey?.01:.0015));return;}}else if(e.deltaY>0)__dive.off();}
   const f=Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015));basis();const w0=unproj(e.clientX-W/2,e.clientY-H/2);zoom=clamp(zoom*f,ZMIN,ZMAX);const w1=unproj(e.clientX-W/2,e.clientY-H/2);sx+=w0[0]-w1[0];sy+=w0[1]-w1[1];dirty=true;},{passive:false});
 scene.addEventListener('contextmenu',e=>e.preventDefault());
 // 1119 시우님: 컴퓨터 마우스 오른쪽 끌기 = 두 손가락 기울이기(벽·3D 지도 같이), 오른쪽 한 번 딸깍 = 반듯한 탑뷰로
