@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#e6e9ef">
+<title>안마원 · All That Massage</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e6e9ef;--sd:#c2c7d1;--acc:#7a5cc4}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;transition:background .4s;user-select:none;-webkit-user-select:none}
+#stage{position:fixed;inset:0}#stage canvas{display:block;touch-action:none}
+.dock{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);display:flex;gap:14px;z-index:5}
+.dock button{border:1px solid color-mix(in srgb,var(--bg) 91%,#000);background:var(--bg);border-radius:2rem;padding:.7rem 1.3rem;font-weight:800;font-size:15px;line-height:1;font-family:inherit;white-space:nowrap;color:color-mix(in srgb,var(--acc) 80%,#000);cursor:pointer;
+  box-shadow:3px 3px 6px var(--sd),-3px -3px 6px #fff;transition:all .2s ease;display:flex;gap:8px;align-items:center}
+.dock button:hover,.dock button:active{box-shadow:inset 2px 2px 5px var(--sd),inset -3px -3px 7px #fff}
+.hint{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 14px);text-align:center;font-size:13px;font-weight:700;color:color-mix(in srgb,var(--acc) 40%,#666);z-index:5;pointer-events:none;opacity:.85}
+</style><style>
+#ov{position:fixed;inset:0;z-index:20;background:rgba(230,233,239,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+#ov.on{opacity:1;pointer-events:auto}
+#sheet{width:min(560px,100%);max-height:88vh;overflow:auto;background:var(--bg);border-radius:28px 28px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom,0px) + 18px);box-shadow:0 -6px 24px rgba(0,0,0,.12);transform:translateY(40px);transition:transform .3s cubic-bezier(.2,.9,.3,1.2)}
+#ov.on #sheet{transform:none}
+.sh-h{display:flex;align-items:baseline;gap:10px;margin-bottom:6px}.sh-h b{font-size:22px;font-weight:900;color:#3b2f6b}.sh-h span{font-size:14px;font-weight:700;color:#8a84a3}
+.note{font-size:12px;font-weight:700;color:#a09ab8;margin-bottom:10px}
+.msgs{height:min(38vh,300px);overflow:auto;padding:12px;border-radius:20px;box-shadow:inset 3px 3px 7px var(--sd),inset -3px -3px 7px #fff;display:flex;flex-direction:column;gap:9px}
+.m{max-width:84%;padding:10px 14px;border-radius:18px;font-size:15px;font-weight:700;line-height:1.45;word-break:keep-all}
+.m.bot{align-self:flex-start;background:var(--bg);color:#3b3550;box-shadow:3px 3px 7px var(--sd),-3px -3px 7px #fff}
+.m.me{align-self:flex-end;background:#ece4ff;color:#4b3a8c;box-shadow:inset 2px 2px 5px #cfc5ea,inset -2px -2px 5px #fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.chip,.nb{border:0;background:var(--bg);border-radius:2rem;padding:.6rem 1rem;font:800 14px/1 inherit;font-family:inherit;color:#5b4a9a;box-shadow:3px 3px 6px var(--sd),-3px -3px 6px #fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.chip:active,.nb:active,.chip.on{box-shadow:inset 2px 2px 5px var(--sd),inset -3px -3px 7px #fff;color:#7a5cc4}
+.nb:disabled{opacity:.4}
+.ask{display:flex;gap:8px;margin-top:10px}.ask input{flex:1;min-width:0;border:0;outline:0;border-radius:2rem;padding:.75rem 1rem;font:700 15px inherit;font-family:inherit;background:#fff8dc;color:#3b3550;box-shadow:inset 2px 2px 5px #e3d9b0,inset -2px -2px 5px #fff}
+.row2{display:flex;gap:10px;margin-top:14px}.row2>*{flex:1;padding:.8rem 1rem;font-size:15px}
+.q1{font-size:15px;font-weight:900;color:#4b3f78;margin-top:10px;transition:opacity .3s}
+.printer{margin:16px auto 0;width:92%;position:relative}
+.slot{height:16px;border-radius:10px;background:var(--bg);box-shadow:inset 3px 3px 6px var(--sd),inset -3px -3px 6px #fff;position:relative;z-index:2}
+.slot::after{content:"";position:absolute;left:6%;right:6%;top:6px;height:4px;border-radius:3px;background:#b9bfcc}
+.paper{margin:-8px 7% 0;background:#fffdf6;border-radius:0 0 10px 10px;padding:0 16px;max-height:0;overflow:hidden;box-shadow:0 8px 16px rgba(0,0,0,.08);position:relative;
+  background-image:repeating-linear-gradient(180deg,transparent 0 31px,rgba(122,92,196,.07) 31px 32px);transition:max-height 1.9s cubic-bezier(.3,.7,.3,1),padding .3s}
+.paper.out{max-height:620px;padding:18px 16px 96px}
+.pl{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:15px;font-weight:700;color:#3b3550;animation:pin .35s ease both;border-bottom:1px dashed rgba(0,0,0,.08)}
+.pl span{color:#8a84a3;white-space:nowrap}.pl em{font-style:normal;font-weight:900;text-align:right}
+.pl.h{justify-content:center;gap:8px;border:0}.pl.h b{font-size:24px;letter-spacing:.3em;color:#3b2f6b}.pl.h i{font-style:normal;font-family:"Nunito Sans";font-weight:900;color:#c8102e}
+.pl.s{border-bottom:2px solid rgba(59,47,107,.15)}
+.pl.p em{font-size:13px;color:#6d6688}
+.pl.b{justify-content:center;border:0;font-size:20px;letter-spacing:.08em;padding-top:12px}
+.stamp{position:absolute;right:14px;bottom:10px;width:78px;height:78px;transform:rotate(-12deg) scale(1.6);opacity:0;animation:stamp .35s cubic-bezier(.2,1.6,.4,1) forwards;mix-blend-mode:multiply}
+@keyframes pin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@keyframes stamp{to{opacity:.88;transform:rotate(-12deg) scale(1)}}
+</style></head><body>
+<div id="stage"></div>
+<div class="hint">흔들거나 빈 곳을 톡 · 명패를 위아래로 쓸면 양꼬치처럼 돌아가요</div>
+<div id="ov"><div id="sheet"></div></div>
+<div class="dock"><button id="shakeBtn">흔들기</button><button id="themeBtn">테마 · <span id="themeName"></span></button></div>
+
+<script>/* 안마원 찾기 벽·지도에서 가게로 들어올 때: 가게 정보 찾아 공용 엔진으로 그림 */
+(async()=>{const q=new URLSearchParams(location.search),n=q.get('n')||'',t=q.get('t')||'';
+ let s=null;try{const all=Object.values(await fetch('shops_all.json').then(r=>r.json()));
+  s=all.find(x=>x.name===n&&x.tel===t)||all.find(x=>x.name===n)||(n?null:all.find(x=>x.sample));}catch(e){}
+ if(!s)s={id:'x',name:n,addr:q.get('a')||'',tel:t,region:q.get('rg')||'',gu:q.get('g')||''};
+ window.SHOP=s;document.title=s.name+' · All That Massage';
+ const sc=document.createElement('script');sc.src='atm_engine.js';document.body.appendChild(sc);})();
+</script>
+</body></html>
